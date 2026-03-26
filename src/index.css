@@ -1,15 +1,52 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@import "tailwindcss";
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@theme {
+  --color-aossie-green: #8CC63F;
+  --color-aossie-yellow: #F7D100;
+  
+  --color-github-dark: #0d1117;
+  --color-github-border: #30363d;
+  --color-github-canvas: #010409;
+  --color-github-muted: #8b949e;
+  --color-github-text: #c9d1d9;
+
+  --font-sans: 'Montserrat', sans-serif;
+  --font-mono: 'Space Mono', monospace;
 }
 
+@layer base {
+  body {
+    background-color: var(--color-github-dark);
+    color: var(--color-github-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Sharp minimalist scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-github-canvas);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-github-border);
+    border-radius: 0;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-aossie-green);
+  }
+}
+
+@layer utilities {
+  .sharp-border {
+    @apply border border-github-border rounded-none;
+  }
+  
+  .sharp-interactive {
+    @apply border border-github-border hover:border-aossie-green transition-colors duration-200 rounded-none;
+  }
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 145 40">
+  <style>
+    .t { font-family: 'Montserrat', system-ui, sans-serif; font-weight: 900; font-size: 40px; fill: #F7D100; }
+    .m { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 40px; fill: #8CC63F; }
+  </style>
+  <text x="0" y="32" class="t">A</text>
+  <text x="32" y="32" class="m">{}</text>
+  <text x="75" y="32" class="t">SIE</text>
+</svg>
