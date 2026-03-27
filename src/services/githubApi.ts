@@ -1,6 +1,6 @@
-import { cacheService } from './cache';
+import { cacheService } from "./cache";
 
-const API_BASE = 'https://api.github.com';
+const API_BASE = "https://api.github.com";
 
 export interface RateLimitInfo {
   limit: number;
@@ -35,8 +35,8 @@ export const githubApi = {
 
   fetchWithCache: async <T>(
     url: string,
-    storeName: 'repos' | 'contributors' | 'activity',
-    cacheKey: string
+    storeName: "repos" | "contributors" | "activity",
+    cacheKey: string,
   ): Promise<T> => {
     const cached = await cacheService.get(storeName, cacheKey);
     if (cached) {
@@ -50,9 +50,14 @@ export const githubApi = {
     if (!response.ok) {
       if (response.status === 403 || response.status === 401) {
         // Trigger generic rate limit event
-        window.dispatchEvent(new CustomEvent('github-api-limit', { detail: response.headers }));
+        window.dispatchEvent(
+          new CustomEvent("github-api-limit", { detail: response.headers }),
+        );
       }
-      throw new GitHubApiError(response.status, `GitHub API Error: ${response.statusText}`);
+      throw new GitHubApiError(
+        response.status,
+        `GitHub API Error: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
@@ -65,7 +70,7 @@ export const githubApi = {
     const response = await fetch(`${API_BASE}/orgs/${org}`, {
       headers: getHeaders(),
     });
-    if (!response.ok) throw new Error('Org not found');
+    if (!response.ok) throw new Error("Org not found");
     return response.json();
   },
 
@@ -75,32 +80,40 @@ export const githubApi = {
     // We'll fetch the first 100 for simplicity in this demo.
     return githubApi.fetchWithCache<any[]>(
       `/orgs/${org}/repos?per_page=100&sort=pushed&direction=desc`,
-      'repos',
-      org
+      "repos",
+      org,
     );
   },
 
   getRepoContributors: async (org: string, repo: string) => {
     return githubApi.fetchWithCache<any[]>(
       `/repos/${org}/${repo}/contributors?per_page=100`,
-      'contributors',
-      `${org}_${repo}`
+      "contributors",
+      `${org}_${repo}`,
     );
   },
-  
+
   getRepoActivity: async (org: string, repo: string) => {
     return githubApi.fetchWithCache<any[]>(
       `/repos/${org}/${repo}/stats/commit_activity`,
-      'activity',
-      `${org}_${repo}`
+      "activity",
+      `${org}_${repo}`,
     );
-  }
+  },
+
+  getRepoEvents: async (org: string, repo: string) => {
+    return githubApi.fetchWithCache<any[]>(
+      `/repos/${org}/${repo}/events?per_page=100`,
+      "activity",
+      `${org}_${repo}_events`,
+    );
+  },
 };
 
 function getHeaders() {
   const token = cacheService.getToken();
   const headers: Record<string, string> = {
-    Accept: 'application/vnd.github.v3+json',
+    Accept: "application/vnd.github.v3+json",
   };
   if (token) {
     headers.Authorization = `Bearer ${token}`;

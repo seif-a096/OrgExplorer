@@ -1,5 +1,5 @@
-import { openDB } from 'idb';
-import type { DBSchema, IDBPDatabase } from 'idb';
+import { openDB } from "idb";
+import type { DBSchema, IDBPDatabase } from "idb";
 
 interface OrgExplorerDB extends DBSchema {
   repos: {
@@ -26,12 +26,12 @@ let dbPromise: Promise<IDBPDatabase<OrgExplorerDB>> | null = null;
 
 const getDB = () => {
   if (!dbPromise) {
-    dbPromise = openDB<OrgExplorerDB>('orgExplorerDB', 1, {
+    dbPromise = openDB<OrgExplorerDB>("orgExplorerDB", 1, {
       upgrade(db) {
-        db.createObjectStore('repos');
-        db.createObjectStore('contributors');
-        db.createObjectStore('activity');
-        db.createObjectStore('metadata');
+        db.createObjectStore("repos");
+        db.createObjectStore("contributors");
+        db.createObjectStore("activity");
+        db.createObjectStore("metadata");
       },
     });
   }
@@ -42,37 +42,51 @@ const TTL_MS = 1000 * 60 * 60; // 1 hour
 
 export const cacheService = {
   // Local storage (long-lived state)
-  getToken: () => localStorage.getItem('gh_token'),
-  setToken: (token: string) => localStorage.setItem('gh_token', token),
-  removeToken: () => localStorage.removeItem('gh_token'),
+  getToken: () => localStorage.getItem("gh_token"),
+  setToken: (token: string) => localStorage.setItem("gh_token", token),
+  removeToken: () => localStorage.removeItem("gh_token"),
 
-  getLastOrg: () => localStorage.getItem('last_org') || 'AOSSIE-Org',
-  setLastOrg: (org: string) => localStorage.setItem('last_org', org),
+  getLastOrgs: (): string[] => {
+    const saved = localStorage.getItem("last_orgs");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return ["AOSSIE-Org"];
+      }
+    }
+    const old = localStorage.getItem("last_org");
+    return old ? [old] : ["AOSSIE-Org"];
+  },
+  setLastOrgs: (orgs: string[]) =>
+    localStorage.setItem("last_orgs", JSON.stringify(orgs)),
 
   // IndexedDB (large datastores)
-  async get<StoreName extends 'repos' | 'contributors' | 'activity'>(
+  async get<StoreName extends "repos" | "contributors" | "activity">(
     storeName: StoreName,
-    key: string
+    key: string,
   ): Promise<any | null> {
     const db = await getDB();
-    const metadata = await db.get('metadata', `${storeName}_${key}`);
-    
+    const metadata = await db.get("metadata", `${storeName}_${key}`);
+
     if (!metadata || Date.now() - metadata.timestamp > TTL_MS) {
       return null; // Cache default/miss
     }
     return db.get(storeName, key);
   },
 
-  async set<StoreName extends 'repos' | 'contributors' | 'activity'>(
+  async set<StoreName extends "repos" | "contributors" | "activity">(
     storeName: StoreName,
     key: string,
-    value: any
+    value: any,
   ) {
     const db = await getDB();
-    const tx = db.transaction([storeName, 'metadata'], 'readwrite');
+    const tx = db.transaction([storeName, "metadata"], "readwrite");
     await Promise.all([
       tx.objectStore(storeName).put(value, key),
-      tx.objectStore('metadata').put({ timestamp: Date.now() }, `${storeName}_${key}`),
+      tx
+        .objectStore("metadata")
+        .put({ timestamp: Date.now() }, `${storeName}_${key}`),
       tx.done,
     ]);
   },
